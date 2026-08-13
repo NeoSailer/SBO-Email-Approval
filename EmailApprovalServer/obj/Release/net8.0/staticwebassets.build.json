@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "IWdb5K5NjrvMyceuzbPAWw3DDlh2jLVzRE6n6DIlvxo=",
+  "Source": "EmailApprovalServer",
+  "BasePath": "_content/EmailApprovalServer",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

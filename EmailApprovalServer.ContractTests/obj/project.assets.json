@@ -1,0 +1,101 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "EmailApprovalServer/1.4.1": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/EmailApprovalServer.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/EmailApprovalServer.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      }
+    }
+  },
+  "libraries": {
+    "EmailApprovalServer/1.4.1": {
+      "type": "project",
+      "path": "../EmailApprovalServer/EmailApprovalServer.csproj",
+      "msbuildProject": "../EmailApprovalServer/EmailApprovalServer.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0": [
+      "EmailApprovalServer >= 1.4.1"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\Jaehee.Yoon\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "J:\\Projects\\EmailApproval\\EmailApprovalServer.ContractTests\\EmailApprovalServer.ContractTests.csproj",
+      "projectName": "EmailApprovalServer.ContractTests",
+      "projectPath": "J:\\Projects\\EmailApproval\\EmailApprovalServer.ContractTests\\EmailApprovalServer.ContractTests.csproj",
+      "packagesPath": "C:\\Users\\Jaehee.Yoon\\.nuget\\packages\\",
+      "outputPath": "J:\\Projects\\EmailApproval\\EmailApprovalServer.ContractTests\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
+      "configFilePaths": [
+        "J:\\Projects\\EmailApproval\\NuGet.Config",
+        "C:\\Users\\Jaehee.Yoon\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0"
+      ],
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "projectReferences": {
+            "J:\\Projects\\EmailApproval\\EmailApprovalServer\\EmailApprovalServer.csproj": {
+              "projectPath": "J:\\Projects\\EmailApproval\\EmailApprovalServer\\EmailApprovalServer.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net8.0": {
+        "targetAlias": "net8.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.423/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

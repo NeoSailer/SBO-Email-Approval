@@ -1,0 +1,39 @@
+<Configuration>
+  <General>
+    <BaseUrl>http://10.81.0.2:5050</BaseUrl>
+    <AllowedNetworkPrefix>10.81.0.0/16,192.168.0.0/16</AllowedNetworkPrefix>
+    <AllowPrivateNetwork>true</AllowPrivateNetwork>
+    <EnableSsl>false</EnableSsl>
+  </General>
+  <Sap>
+    <ServiceLayerUrl>https://TISSIN:50000/b1s/v1</ServiceLayerUrl>
+    <CompanyDb>SBOTSS</CompanyDb>
+    <UserName>manager</UserName>
+    <Password>1111</Password>
+    <SessionTimeoutSeconds>1800</SessionTimeoutSeconds>
+  </Sap>
+  <Mail>
+    <SmtpHost>smtp.office365.com</SmtpHost>
+    <SmtpPort>587</SmtpPort>
+    <SmtpUser>tissin.sa@tissin.co.kr</SmtpUser>
+    <SmtpPassword>ts600**800</SmtpPassword>
+    <FromAddress>tissin.sa@tissin.co.kr</FromAddress>
+    <EnableSsl>true</EnableSsl>
+    <TestRecipient></TestRecipient>
+    <CcAddress>jaehee.yoon@tissin.co.kr</CcAddress>
+  </Mail>
+  <Reminder>
+    <Enabled>true</Enabled>
+    <RunAtTimes>10:00,15:00</RunAtTimes>
+    <TemplateSubject>Pending approval reminder</TemplateSubject>
+    <TemplateBody>There are pending approvals that require action.</TemplateBody>
+  </Reminder>
+  <Hana>
+    <Host>192.168.1.254</Host>
+    <Port>30015</Port>
+    <User>TS_SAP</User>
+    <Password>Ts600**0322</Password>
+    <Schema>SBOTSS</Schema>
+    <Sql>SELECT TOP 10 "WddCode", "OwnerID", "Status", "DraftEntry" FROM "OWDD" WHERE "Status" = 'W'</Sql>
+  </Hana>
+</Configuration>

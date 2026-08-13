@@ -1,0 +1,6 @@
+@EmailApprovalServer_HostAddress = http://localhost:5030
+
+GET {{EmailApprovalServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
