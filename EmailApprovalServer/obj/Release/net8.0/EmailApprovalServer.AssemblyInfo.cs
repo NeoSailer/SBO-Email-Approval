@@ -12,11 +12,11 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("EmailApprovalServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.4.1.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.4.1-detail-without-document-number")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.5.6.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.5.6-retain-completed-approvals+061f94456cd79eb8b348104acfd6675e941db298")]
 [assembly: System.Reflection.AssemblyProductAttribute("EmailApprovalServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EmailApprovalServer")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.4.1.0")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.5.6.0")]
 
 // MSBuild WriteCodeFragment 클래스에서 생성되었습니다.
 

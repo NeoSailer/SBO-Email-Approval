@@ -1,4 +1,4 @@
-import os
+﻿import os
 import smtplib
 import xml.etree.ElementTree as ET
 from email.mime.text import MIMEText
@@ -41,7 +41,15 @@ def fetch_pending_rows(config):
         currentSchema=config['hana_schema'],
     )
     cur = conn.cursor()
-    cur.execute(config['hana_sql'])
+    # Do not trust the configurable legacy query's Status-only filter.
+    source_sql = config['hana_sql'].strip().rstrip(';')
+    cur.execute(f'''
+        SELECT P.* FROM ({source_sql}) P
+        JOIN "OWDD" W ON W."WddCode" = P."WddCode"
+        JOIN "ODRF" D ON D."DocEntry" = W."DraftEntry"
+        WHERE W."Status" = 'W' AND W."ProcesStat" = 'W'
+          AND D."WddStatus" = 'W' AND D."CANCELED" = 'N'
+    ''')
     rows = cur.fetchall()
     cur.close()
     conn.close()

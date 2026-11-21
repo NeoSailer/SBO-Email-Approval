@@ -24,3 +24,4 @@ J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Release\net8.0\E
 J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Release\net8.0\ref\EmailApprovalServer.ContractTests.dll
 J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\bin\Release\net8.0\Sap.Data.Hana.Net.v6.0.dll
 J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\bin\Release\net8.0\Sap.Data.Hana.Net.v6.0.pdb
+J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Release\net8.0\EmailApprovalServer.ContractTests.sourcelink.json

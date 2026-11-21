@@ -249,6 +249,30 @@ public class ApprovalService
             sapPassword);
     }
 
+    // 승인 완료된 초안을 SAP 정식 문서로 생성한다.
+    public async Task<string> SaveDraftToDocumentAsync(int draftEntry, string sapUser, string sapPassword)
+    {
+        var payload = SapDraftRequestFactory.CreateSaveToDocumentJson(draftEntry);
+        // 모든 변환 경로에서 백업 커밋을 먼저 완료한다. 실패하면 SAP 변환을 호출하지 않는다.
+        await new HanaApprovalRepository(this).PreserveApprovalHistoryAsync(draftEntry, CancellationToken.None);
+        var result = await ExecuteSapRequestAsync(
+            HttpMethod.Post,
+            "DraftsService_SaveDraftToDocument",
+            payload,
+            sapUser,
+            sapPassword);
+        try
+        {
+            await new HanaApprovalRepository(this).SynchronizeDraftHistoryAsync(draftEntry, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            // 변환 자체는 성공했다. 동기화 실패를 변환 실패로 표시하거나 변환을 다시 호출하지 않는다.
+            _logger.LogError(ex, "DraftEntry {DraftEntry} was converted, but history synchronization failed; the periodic scan will retry", draftEntry);
+        }
+        return result;
+    }
+
     // 인증과 세션 쿠키 처리를 공통화하여 이후 다른 Service Layer 기능에서도 재사용한다.
     public async Task<string> ExecuteSapRequestAsync(
         HttpMethod method,
@@ -292,6 +316,7 @@ public class ApprovalService
                 <tr>
                   <td style="padding:9px 10px;border-bottom:1px solid #e4e7ec">{{E(line.ItemCode)}}</td>
                   <td style="padding:9px 10px;border-bottom:1px solid #e4e7ec;text-align:right">{{line.Quantity.ToString("N2", CultureInfo.InvariantCulture)}}</td>
+                  <td style="padding:9px 10px;border-bottom:1px solid #e4e7ec;text-align:right">{{line.CurrentStock.ToString("N2", CultureInfo.InvariantCulture)}}</td>
                   <td style="padding:9px 10px;border-bottom:1px solid #e4e7ec;text-align:right">{{line.UnitPrice.ToString("N2", CultureInfo.InvariantCulture)}}</td>
                 </tr>
                 """));
@@ -305,12 +330,13 @@ public class ApprovalService
               <thead><tr style="background:#eaf2f8;color:#344054">
                 <th align="left" style="padding:10px">품목번호</th>
                 <th align="right" style="padding:10px">수량</th>
+                <th align="right" style="padding:10px">현재재고</th>
                 <th align="right" style="padding:10px">단가 ({{E(detail.Currency)}})</th>
               </tr></thead>
               <tbody>{{detailRows}}</tbody>
               <tfoot><tr style="background:#f8fafc;font-weight:bold">
-                <td colspan="2" align="right" style="padding:11px">총계</td>
-                <td align="right" style="padding:11px">{{detail.DocumentTotal.ToString("N2", CultureInfo.InvariantCulture)}} {{E(detail.Currency)}}</td>
+                <td colspan="3" align="right" style="padding:11px">총계</td>
+                <td align="right" style="padding:11px">{{detail.DocumentTotal.ToString("N2", CultureInfo.InvariantCulture)}} KRW</td>
               </tr></tfoot>
             </table>
             """;
@@ -558,6 +584,22 @@ public static class SapApprovalRequestFactory
         };
 
         return JsonSerializer.Serialize(payload);
+    }
+}
+
+public static class SapDraftRequestFactory
+{
+    public static string CreateSaveToDocumentJson(int draftEntry)
+    {
+        if (draftEntry <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(draftEntry), "draftEntry must be a positive integer.");
+        }
+
+        return JsonSerializer.Serialize(new
+        {
+            Document = new { DocEntry = draftEntry }
+        });
     }
 }
 

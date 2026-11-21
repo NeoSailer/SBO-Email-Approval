@@ -1,9 +1,14 @@
 using EmailApprovalServer.Services;
+using EmailApprovalServer.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddProvider(new DailyFileLoggerProvider(
+    Path.Combine(AppContext.BaseDirectory, "logs")));
+
 builder.Services.AddSingleton<ApprovalService>();
 builder.Services.AddSingleton<HanaApprovalRepository>();
+builder.Services.AddSingleton<DraftFinalizationService>();
 builder.Services.AddHostedService<ApprovalNotificationWorker>();
 builder.WebHost.UseUrls(Environment.GetEnvironmentVariable("EMAIL_APPROVAL_URLS") ?? "http://0.0.0.0:5050");
 
@@ -38,7 +43,7 @@ app.MapGet("/approval/approve", (string requestId, ApprovalService service, Http
 app.MapGet("/approval/reject", (string requestId, ApprovalService service, HttpContext context) =>
     RenderDecisionPage(requestId, "reject", service, context));
 
-app.MapPost("/approval/complete", async (HttpContext context, ApprovalService service) =>
+app.MapPost("/approval/complete", async (HttpContext context, ApprovalService service, HanaApprovalRepository repository, DraftFinalizationService finalizationService) =>
 {
     if (!service.IsAllowedClient(context.Connection.RemoteIpAddress?.ToString()))
     {
@@ -61,6 +66,40 @@ app.MapPost("/approval/complete", async (HttpContext context, ApprovalService se
     {
         await service.SubmitSapApprovalAsync(requestId, decision, remarks, sapUser, sapPassword);
         var action = decision == "approve" ? "승인" : "거절";
+        try
+        {
+            await repository.SynchronizeApprovalHistoryAsync(int.Parse(requestId), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "SAP decision succeeded but history synchronization failed for WddCode {RequestId}", requestId);
+            return Results.Text(ApprovalHtml.RenderMessage(
+                $"{action} 완료", $"SAP {action} 처리는 완료되었지만 승인 이력 동기화에 실패했습니다. 5분 주기 작업에서 다시 시도합니다.",
+                true, ApprovalService.ToAdminErrorMessage(ex)), "text/html");
+        }
+        if (decision == "approve" && int.TryParse(requestId, out var approvalRequestId))
+        {
+            try
+            {
+                var finalized = await finalizationService.FinalizeRequestIfApprovedAsync(
+                    approvalRequestId, sapUser, sapPassword, context.RequestAborted);
+                var message = finalized
+                    ? "SAP 요청이 승인되었고 정식문서가 생성되었습니다."
+                    : "SAP 요청이 정상적으로 승인되었습니다. 다음 승인 단계가 남아 있습니다.";
+                return Results.Text(ApprovalHtml.RenderMessage("처리 완료", message), "text/html");
+            }
+            catch (Exception ex)
+            {
+                app.Logger.LogError(ex,
+                    "Approval succeeded but immediate document finalization failed for WddCode {RequestId}",
+                    approvalRequestId);
+                return Results.Text(ApprovalHtml.RenderMessage(
+                    "승인 완료",
+                    "승인은 완료되었지만 정식문서 생성에 실패했습니다. 5분 주기 작업에서 다시 시도합니다.",
+                    true,
+                    ApprovalService.ToAdminErrorMessage(ex)), "text/html");
+            }
+        }
         return Results.Text(ApprovalHtml.RenderMessage("처리 완료", $"SAP 요청이 정상적으로 {action}되었습니다."), "text/html");
     }
     catch (Exception ex)

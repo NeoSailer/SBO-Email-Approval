@@ -7,9 +7,9 @@
   </General>
   <Sap>
     <ServiceLayerUrl>https://TISSIN:50000/b1s/v1</ServiceLayerUrl>
-    <CompanyDb>SBOTSS</CompanyDb>
-    <UserName>manager</UserName>
-    <Password>1111</Password>
+    <CompanyDb>SBOTSS_NEW</CompanyDb>
+    <UserName>PVI_Interface</UserName>
+    <Password>ts600**800</Password>
     <SessionTimeoutSeconds>1800</SessionTimeoutSeconds>
   </Sap>
   <Mail>
@@ -33,7 +33,7 @@
     <Port>30015</Port>
     <User>TS_SAP</User>
     <Password>Ts600**0322</Password>
-    <Schema>SBOTSS</Schema>
+    <Schema>SBOTSS_NEW</Schema>
     <Sql>SELECT TOP 10 "WddCode", "OwnerID", "Status", "DraftEntry" FROM "OWDD" WHERE "Status" = 'W'</Sql>
   </Hana>
 </Configuration>

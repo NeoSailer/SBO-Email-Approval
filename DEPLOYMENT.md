@@ -8,6 +8,9 @@ EmailApprovalServer는 SAP Business One의 결재 대기 문서를 조회하여 
 
 - SAP HANA에서 결재 대기 문서와 승인자 이메일 조회
 - 새로운 결재 요청을 5분 간격으로 확인하여 이메일 발송
+- 마지막 승인 직후 승인된 초안을 정식문서로 자동 생성
+- 즉시 생성 실패 시 5분 간격 작업에서 승인 완료 초안을 자동 재처리
+- 실행 및 정식문서 전환 로그를 `logs/EmailApprovalServer-yyyyMMdd.log`에 기록
 - 평일 지정 시간에 미결 건 알림 이메일 재발송
 - 이메일에서 승인 또는 거절 화면 제공
 - SAP Business One 계정으로 승인 또는 거절 처리

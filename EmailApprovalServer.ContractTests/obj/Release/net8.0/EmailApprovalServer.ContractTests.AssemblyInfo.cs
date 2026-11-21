@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EmailApprovalServer.ContractTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+061f94456cd79eb8b348104acfd6675e941db298")]
 [assembly: System.Reflection.AssemblyProductAttribute("EmailApprovalServer.ContractTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EmailApprovalServer.ContractTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

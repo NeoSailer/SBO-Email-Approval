@@ -24,3 +24,4 @@ J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Debug\net8.0\ref
 J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Debug\net8.0\EmailApprovalServer.ContractTests.pdb
 J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Debug\net8.0\EmailApprovalServer.ContractTests.genruntimeconfig.cache
 J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Debug\net8.0\ref\EmailApprovalServer.ContractTests.dll
+J:\Projects\EmailApproval\EmailApprovalServer.ContractTests\obj\Debug\net8.0\EmailApprovalServer.ContractTests.sourcelink.json

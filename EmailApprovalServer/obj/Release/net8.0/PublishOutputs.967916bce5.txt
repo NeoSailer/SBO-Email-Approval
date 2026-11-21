@@ -1,0 +1,10 @@
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\EmailApprovalServer.exe
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\appsettings.Development.json
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\appsettings.json
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\Config\appsettings.xml
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\EmailApprovalServer.dll
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\EmailApprovalServer.deps.json
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\EmailApprovalServer.runtimeconfig.json
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\EmailApprovalServer.pdb
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\Sap.Data.Hana.Net.v6.0.dll
+J:\Projects\EmailApproval\publish\EmailApprovalServer-20260814-v1.5.1-SBOTSS_NEW\Sap.Data.Hana.Net.v6.0.pdb

@@ -28,3 +28,4 @@ J:\Projects\EmailApproval\EmailApprovalServer\bin\Release\net8.0\Sap.Data.Hana.N
 J:\Projects\EmailApproval\EmailApprovalServer\bin\Release\net8.0\Sap.Data.Hana.Net.v6.0.pdb
 J:\Projects\EmailApproval\EmailApprovalServer\obj\Release\net8.0\EmailApprovalServer.csproj.AssemblyReference.cache
 J:\Projects\EmailApproval\EmailApprovalServer\obj\Release\net8.0\EmailApp.906CC7AE.Up2Date
+J:\Projects\EmailApproval\EmailApprovalServer\obj\Release\net8.0\EmailApprovalServer.sourcelink.json

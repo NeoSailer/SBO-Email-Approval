@@ -3,6 +3,8 @@ using EmailApprovalServer.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 
+ApprovalHistoryTests.Run();
+
 static void Assert(bool condition, string message)
 {
     if (!condition)
@@ -48,6 +50,20 @@ catch (ArgumentException)
 }
 
 Console.WriteLine("All SAP approval contract tests passed.");
+
+using (var saveDraftPayload = JsonDocument.Parse(SapDraftRequestFactory.CreateSaveToDocumentJson(652)))
+{
+    Assert(saveDraftPayload.RootElement.GetProperty("Document").GetProperty("DocEntry").GetInt32() == 652,
+        "SaveDraftToDocument payload must contain the numeric draft DocEntry.");
+}
+try
+{
+    SapDraftRequestFactory.CreateSaveToDocumentJson(0);
+    throw new InvalidOperationException("Invalid draftEntry was accepted.");
+}
+catch (ArgumentOutOfRangeException)
+{
+}
 
 var page = ApprovalHtml.RenderLogin("9", "approve");
 Assert(page.Contains("SAP Business One 계정 로그인"), "Login heading is missing.");
@@ -102,7 +118,7 @@ Assert(!ApprovalNotificationWorker.TryGetDueReminderSlot(
     "Reminder must not run outside its configured minute.");
 
 var pendingApproval = new PendingApproval(22, 339, "pcb03", "구매 오더", "305", "Support",
-    new DateTime(2026, 8, 11), 3927m, "KRW", "초안 비고", "pcb03@example.com");
+    new DateTime(2026, 8, 11), 3927m, "USD", "초안 비고", "pcb03@example.com");
 var pendingNotification = pendingApproval.ToNotification();
 Assert(pendingNotification.RequestId == "22" && pendingNotification.DraftNumber == "339", "Pending approval key mapping is invalid.");
 Assert(pendingNotification.DocumentTotal == "3,927 KRW" && pendingNotification.CreatedDate == "2026.08.11", "Pending approval display formatting is invalid.");
@@ -110,8 +126,8 @@ Assert(pendingNotification.ApproverEmail == "pcb03@example.com", "Approver email
 
 Console.WriteLine("All scheduler and pending approval mapping tests passed.");
 
-var draftDetail = new DraftDetail("VA0005", "(주)다원이엔지", "286", 1060000m, "KRW",
-    new List<DraftLine> { new("EC01-0003", 1m, 1060000m) });
+var draftDetail = new DraftDetail("VA0005", "(주)다원이엔지", "286", 1060000m, "USD",
+    new List<DraftLine> { new("EC01-0003", 1m, 25.5m, 1060000m) });
 var detailedEmail = ApprovalService.BuildApprovalEmailBody(
     notification, "http://server/approve", "http://server/reject", draftDetail);
 Assert(detailedEmail.Contains("[전표 상세]") && detailedEmail.Contains("VA0005") && detailedEmail.Contains("(주)다원이엔지"), "Email document header details are missing.");
@@ -119,8 +135,11 @@ var detailSectionStart = detailedEmail.IndexOf("[전표 상세]", StringComparis
 var actionSectionStart = detailedEmail.IndexOf(">승인</a>", detailSectionStart, StringComparison.Ordinal);
 var detailSection = detailedEmail[detailSectionStart..actionSectionStart];
 Assert(!detailSection.Contains("전표번호"), "Document number must not appear in the document detail section.");
-Assert(detailedEmail.Contains("EC01-0003") && detailedEmail.Contains("품목번호") && detailedEmail.Contains("수량") && detailedEmail.Contains("단가"), "Email item details are missing.");
+Assert(detailedEmail.Contains("EC01-0003") && detailedEmail.Contains("품목번호") && detailedEmail.Contains("수량") && detailedEmail.Contains("현재재고") && detailedEmail.Contains("단가"), "Email item details are missing.");
+Assert(detailedEmail.Contains("25.50"), "Current OITM.OnHand stock is missing or incorrectly formatted.");
 Assert(detailedEmail.Contains("1,060,000.00 KRW"), "Email document total is missing or incorrectly formatted.");
+Assert(detailedEmail.Contains("단가 (USD)"), "The item unit-price currency must retain the document currency.");
+Assert(!detailedEmail.Contains("1,060,000.00 USD"), "The document total must use KRW rather than the document currency.");
 
 Console.WriteLine("All email document detail tests passed.");
 

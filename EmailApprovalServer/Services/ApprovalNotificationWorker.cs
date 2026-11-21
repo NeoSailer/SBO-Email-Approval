@@ -1,10 +1,11 @@
-namespace EmailApprovalServer.Services;
+﻿namespace EmailApprovalServer.Services;
 
 public sealed class ApprovalNotificationWorker : BackgroundService
 {
     private static readonly TimeSpan ScanInterval = TimeSpan.FromMinutes(5);
     private readonly HanaApprovalRepository _repository;
     private readonly ApprovalService _approvalService;
+    private readonly DraftFinalizationService _draftFinalizationService;
     private readonly ILogger<ApprovalNotificationWorker> _logger;
     private readonly HashSet<string> _completedReminderSlots = new();
     private readonly HashSet<int> _sentButUnmarkedDrafts = new();
@@ -13,10 +14,12 @@ public sealed class ApprovalNotificationWorker : BackgroundService
     public ApprovalNotificationWorker(
         HanaApprovalRepository repository,
         ApprovalService approvalService,
+        DraftFinalizationService draftFinalizationService,
         ILogger<ApprovalNotificationWorker> logger)
     {
         _repository = repository;
         _approvalService = approvalService;
+        _draftFinalizationService = draftFinalizationService;
         _logger = logger;
     }
 
@@ -29,6 +32,9 @@ public sealed class ApprovalNotificationWorker : BackgroundService
             {
                 if (now >= _nextScan)
                 {
+                    await _repository.SynchronizeApprovalHistoryAsync(null, stoppingToken);
+                    _logger.LogInformation("Periodic approval history synchronization completed");
+                    await _draftFinalizationService.FinalizeAllApprovedAsync(stoppingToken);
                     await SendNewApprovalNotificationsAsync(stoppingToken);
                     _nextScan = now.Add(ScanInterval);
                 }
@@ -89,6 +95,11 @@ public sealed class ApprovalNotificationWorker : BackgroundService
             {
                 try
                 {
+                    if (!await _repository.IsStillPendingAsync(approval, cancellationToken))
+                    {
+                        _logger.LogInformation("Skipped non-pending approval WddCode {RequestId}", approval.RequestId);
+                        continue;
+                    }
                     await _approvalService.SendAutomatedApprovalEmailAsync(approval.ToNotification(), detail);
                 }
                 catch (Exception ex)
@@ -133,6 +144,11 @@ public sealed class ApprovalNotificationWorker : BackgroundService
             {
                 try
                 {
+                    if (!await _repository.IsStillPendingAsync(approval, cancellationToken))
+                    {
+                        _logger.LogInformation("Skipped non-pending approval WddCode {RequestId}", approval.RequestId);
+                        continue;
+                    }
                     await _approvalService.SendAutomatedApprovalEmailAsync(approval.ToNotification(), detail);
                 }
                 catch (Exception ex)

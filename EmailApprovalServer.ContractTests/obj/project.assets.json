@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     "net8.0": {
-      "EmailApprovalServer/1.4.1": {
+      "EmailApprovalServer/1.5.6": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "compile": {
@@ -18,7 +18,7 @@
     }
   },
   "libraries": {
-    "EmailApprovalServer/1.4.1": {
+    "EmailApprovalServer/1.5.6": {
       "type": "project",
       "path": "../EmailApprovalServer/EmailApprovalServer.csproj",
       "msbuildProject": "../EmailApprovalServer/EmailApprovalServer.csproj"
@@ -26,12 +26,11 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "EmailApprovalServer >= 1.4.1"
+      "EmailApprovalServer >= 1.5.6"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Jaehee.Yoon\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Jaehee.Yoon\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -42,14 +41,8 @@
       "packagesPath": "C:\\Users\\Jaehee.Yoon\\.nuget\\packages\\",
       "outputPath": "J:\\Projects\\EmailApproval\\EmailApprovalServer.ContractTests\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "J:\\Projects\\EmailApproval\\NuGet.Config",
-        "C:\\Users\\Jaehee.Yoon\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "J:\\Projects\\EmailApproval\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

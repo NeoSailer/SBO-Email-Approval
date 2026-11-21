@@ -1,8 +1,8 @@
-using Sap.Data.Hana;
+﻿using Sap.Data.Hana;
 
 namespace EmailApprovalServer.Services;
 
-public sealed class HanaApprovalRepository
+public sealed partial class HanaApprovalRepository
 {
     private readonly ApprovalService _approvalService;
 
@@ -33,6 +33,9 @@ public sealed class HanaApprovalRepository
               JOIN "{{cfg.HanaSchema}}"."ODRF" D ON D."DocEntry" = W."DraftEntry"
               LEFT JOIN "{{cfg.HanaSchema}}"."OUSR" C ON C."USERID" = D."UserSign"
              WHERE W."Status" = 'W'
+               AND W."ProcesStat" = 'W'
+               AND D."WddStatus" = 'W'
+               AND D."CANCELED" = 'N'
                AND W."ObjType" IN ('22', '23', '540000006')
                {{unsentFilter}}
              ORDER BY W."WddCode", L."SortId"
@@ -59,6 +62,30 @@ public sealed class HanaApprovalRepository
         return rows;
     }
 
+    // Recheck after attachment loading: cancellation may happen after the batch query.
+    public async Task<bool> IsStillPendingAsync(PendingApproval approval, CancellationToken cancellationToken)
+    {
+        var cfg = _approvalService.LoadConfig();
+        await using var connection = new HanaConnection(BuildConnectionString(cfg));
+        await connection.OpenAsync(cancellationToken);
+        var sql = $$"""
+            SELECT COUNT(*)
+              FROM "{{cfg.HanaSchema}}"."OWDD" W
+              JOIN "{{cfg.HanaSchema}}"."WDD1" L ON L."WddCode" = W."WddCode"
+              JOIN "{{cfg.HanaSchema}}"."OUSR" A ON A."USERID" = L."UserID"
+              JOIN "{{cfg.HanaSchema}}"."ODRF" D ON D."DocEntry" = W."DraftEntry"
+             WHERE W."WddCode" = ? AND W."DraftEntry" = ? AND A."USER_CODE" = ?
+               AND W."Status" = 'W' AND W."ProcesStat" = 'W' AND L."Status" = 'W'
+               AND D."WddStatus" = 'W' AND D."CANCELED" = 'N'
+               AND W."ObjType" IN ('22', '23', '540000006')
+            """;
+        await using var command = new HanaCommand(sql, connection);
+        command.Parameters.Add(new HanaParameter { Value = approval.RequestId });
+        command.Parameters.Add(new HanaParameter { Value = approval.DraftEntry });
+        command.Parameters.Add(new HanaParameter { Value = approval.ApproverId });
+        return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+    }
+
     public async Task MarkDraftNotifiedAsync(int draftEntry, CancellationToken cancellationToken)
     {
         var cfg = _approvalService.LoadConfig();
@@ -82,6 +109,50 @@ public sealed class HanaApprovalRepository
             throw new InvalidOperationException(
                 $"Unexpected ODRF update count for DraftEntry {draftEntry}: {affected}.");
         }
+    }
+
+    public async Task<IReadOnlyList<ApprovedDraft>> GetApprovedDraftsAsync(
+        int? requestId,
+        CancellationToken cancellationToken)
+    {
+        var cfg = _approvalService.LoadConfig();
+        await using var connection = new HanaConnection(BuildConnectionString(cfg));
+        await connection.OpenAsync(cancellationToken);
+
+        var requestFilter = requestId.HasValue ? "AND W.\"WddCode\" = ?" : string.Empty;
+        var sql = $$"""
+            SELECT MIN(W."WddCode") AS "WddCode", W."DraftEntry", W."ObjType"
+              FROM "{{cfg.HanaSchema}}"."OWDD" W
+              JOIN "{{cfg.HanaSchema}}"."ODRF" D ON D."DocEntry" = W."DraftEntry"
+             WHERE W."Status" = 'Y'
+               AND W."IsDraft" = 'Y'
+               AND W."ObjType" IN ('22', '23', '540000006')
+               AND NOT EXISTS (
+                   SELECT 1
+                     FROM "{{cfg.HanaSchema}}"."OWDD" P
+                    WHERE P."DraftEntry" = W."DraftEntry"
+                      AND P."Status" = 'W'
+                      AND P."IsDraft" = 'Y')
+               {{requestFilter}}
+             GROUP BY W."DraftEntry", W."ObjType"
+             ORDER BY W."DraftEntry"
+            """;
+        await using var command = new HanaCommand(sql, connection);
+        if (requestId.HasValue)
+        {
+            command.Parameters.Add(new HanaParameter { Value = requestId.Value });
+        }
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var rows = new List<ApprovedDraft>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new ApprovedDraft(
+                Convert.ToInt32(reader["WddCode"]),
+                Convert.ToInt32(reader["DraftEntry"]),
+                Convert.ToString(reader["ObjType"]) ?? string.Empty));
+        }
+        return rows;
     }
 
     public async Task<DraftDetail> GetDraftDetailAsync(int draftEntry, CancellationToken cancellationToken)
@@ -115,9 +186,14 @@ public sealed class HanaApprovalRepository
                         THEN COALESCE(L."U_ITEMCODE", '')
                         ELSE COALESCE(L."ItemCode", '')
                    END AS "ItemCode",
-                   L."Quantity", L."Price"
+                   L."Quantity", COALESCE(I."OnHand", 0) AS "OnHand", L."Price"
               FROM "{cfg.HanaSchema}"."DRF1" L
               JOIN "{cfg.HanaSchema}"."ODRF" D ON D."DocEntry" = L."DocEntry"
+              LEFT JOIN "{cfg.HanaSchema}"."OITM" I
+                ON I."ItemCode" = CASE WHEN D."ObjType" = '540000006'
+                                        THEN COALESCE(L."U_ITEMCODE", '')
+                                        ELSE COALESCE(L."ItemCode", '')
+                                   END
              WHERE L."DocEntry" = ?
              ORDER BY L."LineNum"
             """;
@@ -129,6 +205,7 @@ public sealed class HanaApprovalRepository
             detail.Lines.Add(new DraftLine(
                 Convert.ToString(lineReader["ItemCode"]) ?? string.Empty,
                 Convert.ToDecimal(lineReader["Quantity"]),
+                Convert.ToDecimal(lineReader["OnHand"]),
                 Convert.ToDecimal(lineReader["Price"])));
         }
         return detail;
@@ -153,7 +230,7 @@ public sealed record PendingApproval(
 {
     public ApprovalNotificationRequest ToNotification() => new(
         RequestId.ToString(), ApproverId, DocumentType, DocumentNumber, DraftEntry.ToString(), Creator,
-        CreatedDate.ToString("yyyy.MM.dd"), $"{DocumentTotal:N0} {Currency}", DraftRemarks, ApproverEmail);
+        CreatedDate.ToString("yyyy.MM.dd"), $"{DocumentTotal:N0} KRW", DraftRemarks, ApproverEmail);
 }
 
 public sealed record DraftDetail(
@@ -164,4 +241,6 @@ public sealed record DraftDetail(
     string Currency,
     List<DraftLine> Lines);
 
-public sealed record DraftLine(string ItemCode, decimal Quantity, decimal UnitPrice);
+public sealed record DraftLine(string ItemCode, decimal Quantity, decimal CurrentStock, decimal UnitPrice);
+
+public sealed record ApprovedDraft(int RequestId, int DraftEntry, string ObjectType);
